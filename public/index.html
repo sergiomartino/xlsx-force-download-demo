@@ -1,0 +1,42 @@
+<!doctype>
+<html>
+<body>
+
+<pre>click to download</pre>
+
+<button onclick="javascript: downloadFile()">Export</button>
+
+<script>
+const log = document.querySelector('pre');
+const button = document.querySelector('button');
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(new Blob([blob], {type : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  const clickHandler = () => {
+	setTimeout(() => {
+	  URL.revokeObjectURL(url);
+	  this.removeEventListener('click', clickHandler);
+	}, 500);
+  };
+  a.addEventListener('click', clickHandler, false);
+  a.click();  
+  return a;
+}
+
+function downloadFile() {
+	log.textContent = 'exporting...';
+	button.disabled = true;
+	fetch('/download')
+		.then(response => response.blob())
+		.then(blob => downloadBlob(blob, 'export.xlsx'))
+		.then(() => {
+			log.textContent = 'done!';
+			button.disabled = false;
+		});
+}
+</script>
+</body>
+</html>
